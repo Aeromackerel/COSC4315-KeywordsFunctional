@@ -24,6 +24,13 @@ class Solution:
 
         return tempList[0], tempList[1], tempList[2], tempList[3], tempList[4]
 
+    def fileHandler(fileName, words=[]):
+       try:
+            with open(fileName,'r') as f:
+                words=f.read().split()
+       except:
+            print("File Not Found.")
+       return words
 
 # Driver code
 
@@ -39,3 +46,5 @@ if __name__ == "__main__":
     print ("uppercase : " + uppercase)
     print("output : " + output)
 
+    #list of words in given file
+    a = Solution.fileHandler(input)
