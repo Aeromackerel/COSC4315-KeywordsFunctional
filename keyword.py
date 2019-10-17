@@ -35,17 +35,30 @@ class Solution:
         return tempList[0], tempList[1], tempList[2], tempList[3], tempList[4]
 
     # Reads from text file that we have in the directory
+    # while removing all stopwords that is encountered
     # and stores the text into the text field variable we
     # have in the class
     # @params - the input file name
     # @error - if something other than Y/N is passed in the uppercase slot -> notify user and exit
 
-    def fileHandler(self, fileName):
+    def fileHandler(self, fileName, stopwordsFile):
        try:
             with open(fileName,"r") as f:
                 self.text =f.read().split()
        except:
             print("File Not Found.")
+            sys.exit(1)
+       try:
+            with open(stopwordsFile,"r") as g:
+                stopwords = g.read().split()
+       except:
+            print("stopwords.txt Not Found.")
+            sys.exit(1)
+       for word in self.text:
+            if word in stopwords:
+                self.text.remove(word)
+       #below should be all the keywords in the file
+       #print(self.text)    
 
     # Given the case specified that we read in from argv, we
     # look through the text list that we have and iterate
@@ -108,7 +121,7 @@ if __name__ == "__main__":
     #print("output : " + output)
 
     # Read input and store them in the list in the class
-    Solution.fileHandler(Solution, input)
+    Solution.fileHandler(Solution, input, "stopwords.txt")
 
     Solution.CaseHandler(Solution, uppercase)
 
