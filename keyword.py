@@ -4,11 +4,10 @@ import sys
 
 class Solution:
 
-    # Field variables
-    originalText = []
-    alteredText = []
-    list_keywords =  []
-    list_keywordsFreq = []
+    # field variable initialization
+    fileText = ""
+    listContent = []
+    listContentModified = []
 
     # Parses Arguments and passes back to main
     # @ params - input argument (argv[1])
@@ -21,6 +20,7 @@ class Solution:
         tempList = argumentsIn.split(";")
 
         # Since we have a defined input with no variation - we can assume the first input is inputfilename ... etc
+        # REPLACE THIS LATER - MUTATION HERE
         try:
             tempList[0] = tempList[0].replace("input=", "")
             tempList[1] = int(tempList[1].replace('k=', ''))
@@ -34,38 +34,49 @@ class Solution:
 
         return tempList[0], tempList[1], tempList[2], tempList[3], tempList[4]
 
+    # Checks the parameters for validity
+    # @ params - kNumbers, uppercase, mostFrequent
+    # @ error - unknown input -> exit
+
     # Reads from text file that we have in the directory
     # and stores the text into the text field variable we
     # have in the class
     # @params - the input file name
     # @error - if something other than Y/N is passed in the uppercase slot -> notify user and exit
 
+    def CheckParams (kNums, mostFreq, caseSpecified):
+        if (kNums < 0):
+            print ("kNumbers should be greater or equal to 0.")
+            exit (1)
+        elif (mostFreq != 'Y' and mostFreq != 'N'):
+            print ("Most frequent should be either Y OR N")
+            exit (1)
+        elif (caseSpecified != 'Y' and caseSpecified != 'N'):
+            print ("uppercase should be either Y OR N")
+            exit (1)
+
+
     def fileHandler(self, fileName):
+
        try:
             with open(fileName,"r") as f:
-                self.text =f.read().split()
+               self.filtText = f.read()
        except:
             print("File Not Found.")
 
-    # Given the case specified that we read in from argv, we
-    # look through the text list that we have and iterate
-    # character by character to set words to lower case
-
-    def CaseHandler(self, caseSpecified):
-
-        # if conditionals to determine the cases selected
-
-        if (caseSpecified == 'Y'):
-            print("Uppercase chosen")
+    # Prints the original list content
+    def printText(self):
+        print (self.fileText)
 
 
+    def convertCase(self, caseSpecfied):
+        if (caseSpecfied == 'Y'):
+            print ("Uppercase chosen")
 
 
-        elif (caseSpecified == 'N'):
-            print("Lowercase chosen")
-        else:
-            print("Unknown argument passed in for 'uppercase' field. Please use either Y/N to denote uppercase or lowercase. Terminating program")
-            exit(1)
+        elif (caseSpecfied == 'N'):
+            print ("Lowercase chosen")
+
 
     # Helper functions to main functions
     # check if the character is a valid letter
@@ -107,12 +118,8 @@ if __name__ == "__main__":
     #print ("uppercase : " + uppercase)
     #print("output : " + output)
 
-    # Read input and store them in the list in the class
+    # check the param validity
+    Solution.CheckParams(kNum, mostFreq, uppercase)
+
+    # Read input and stores the words in a string
     Solution.fileHandler(Solution, input)
-
-    Solution.CaseHandler(Solution, uppercase)
-
-    sample = Solution.LowercaseHelper("A")
-    sample2 = Solution.UppercaseHelper("c")
-    print(sample)
-    print(sample2)
