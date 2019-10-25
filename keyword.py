@@ -54,13 +54,40 @@ class Solution:
     def fileHandler(fileName, caseSpecified):
 
        try:
-            with open(fileName,"r") as f:
+            with open(fileName,"r", encoding = "utf8") as f:
                tempString = f.read()
                fileContent = tempString.split()
+               stopWords = (open("stopwords.txt", "r", encoding = "utf8")).read().split()
+               stopWordsUpdated = list(filter(str.strip, stopWords))
                caseCorrectedList = Solution.caseHelper(fileContent, caseSpecified)
                print(caseCorrectedList)
+               noStopWordsList = Solution.RemoveStopWords(caseCorrectedList, stopWordsUpdated)
+               print(noStopWordsList)
        except:
             print("File Not Found.")
+
+    def RemoveStopWords(fileContent, stopWords):
+        result = (map(lambda x : x in stopWords, fileContent))
+        listResult = list(result)
+        print(listResult)
+        listNoStopWords = Solution.RemoveStopWordsHelper(fileContent, listResult, 0)
+        return listNoStopWords
+
+
+    def RemoveStopWordsHelper(fileContent, stopWords, listIndex):
+
+        if (listIndex == len(fileContent)-1):
+            return fileContent
+
+        if (stopWords[listIndex] == True):
+            revisedList = fileContent[:listIndex] + fileContent[(listIndex+1):]
+            stopWordsRevised = stopWords[:listIndex] + stopWords[(listIndex+1):]
+            return Solution.RemoveStopWordsHelper(revisedList, stopWordsRevised, listIndex)
+        else:
+            return Solution.RemoveStopWordsHelper(fileContent, stopWords, listIndex+1)
+
+
+
 
     def caseHelper(listWords, caseSpecified):
         if (caseSpecified == "Y" ):
