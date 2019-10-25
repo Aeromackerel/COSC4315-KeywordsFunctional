@@ -77,7 +77,11 @@ class Solution:
     def RemoveStopWordsHelper(fileContent, stopWords, listIndex):
 
         if (listIndex == len(fileContent)-1):
-            return fileContent
+            if (stopWords[listIndex] == True):
+                revisedList = fileContent[:listIndex] + stopWords[(listIndex+1):]
+                return revisedList
+            else:
+                return fileContent
 
         if (stopWords[listIndex] == True):
             revisedList = fileContent[:listIndex] + fileContent[(listIndex+1):]
