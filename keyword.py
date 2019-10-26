@@ -4,12 +4,6 @@ import sys
 
 class Solution:
 
-    # Field variables
-    originalText = []
-    alteredText = []
-    list_keywords =  []
-    list_keywordsFreq = []
-
     # Parses Arguments and passes back to main
     # @ params - input argument (argv[1])
     # @ error - if we get different number of arguments then -> notify user and exit program
@@ -21,87 +15,180 @@ class Solution:
         tempList = argumentsIn.split(";")
 
         # Since we have a defined input with no variation - we can assume the first input is inputfilename ... etc
+        # REPLACE THIS LATER - MUTATION HERE
         try:
-            tempList[0] = tempList[0].replace("input=", "")
-            tempList[1] = int(tempList[1].replace('k=', ''))
-            tempList[2] = tempList[2].replace("mostfrequent=", '')
-            tempList[3] = tempList[3].replace("uppercase=", '')
-            tempList[4] = tempList[4].replace('output=', '')
+            argOne = tempList[0].replace("input=", "")
+            argTwo = int(tempList[1].replace('k=', ''))
+            argThree = tempList[2].replace("mostfrequent=", '')
+            argFour = tempList[3].replace("uppercase=", '')
+            argFive = tempList[4].replace('output=', '')
         except:
             # Print parameters and what is expected of each parameter, otherwise exit
             print ("Invalid arguments")
             sys.exit(1)
 
-        return tempList[0], tempList[1], tempList[2], tempList[3], tempList[4]
+        return argOne, argTwo, argThree, argFour, argFive
+
+    # Checks the parameters for validity
+    # @ params - kNumbers, uppercase, mostFrequent
+    # @ error - unknown input -> exit
 
     # Reads from text file that we have in the directory
-    # while removing all stopwords that is encountered
     # and stores the text into the text field variable we
     # have in the class
     # @params - the input file name
     # @error - if something other than Y/N is passed in the uppercase slot -> notify user and exit
 
-    def fileHandler(self, fileName, stopwordsFile):
+    def CheckParams (kNums, mostFreq, caseSpecified):
+        if (kNums < 0):
+            print ("kNumbers should be greater or equal to 0.")
+            exit (1)
+        elif (mostFreq != 'Y' and mostFreq != 'N'):
+            print ("Most frequent should be either Y OR N")
+            exit (1)
+        elif (caseSpecified != 'Y' and caseSpecified != 'N'):
+            print ("uppercase should be either Y OR N")
+            exit (1)
+
+
+    def fileHandler(fileName, caseSpecified):
+
        try:
-            with open(fileName,"r") as f:
-                self.text =f.read().split()
+            with open(fileName,"r", encoding = "utf8") as f:
+               tempString = f.read()
+               fileContent = tempString.split()
+               stopWords = (open("stopwords.txt", "r", encoding = "utf8")).read().split()
+               stopWordsUpdated = list(filter(str.strip, stopWords))
+               caseCorrectedList = Solution.caseHelper(fileContent, caseSpecified)
+               print(caseCorrectedList)
+               noStopWordsList = Solution.RemoveStopWords(caseCorrectedList, stopWordsUpdated)
+               print(noStopWordsList)
        except:
             print("File Not Found.")
-            sys.exit(1)
-       try:
-            with open(stopwordsFile,"r") as g:
-                stopwords = g.read().split()
-       except:
-            print("stopwords.txt Not Found.")
-            sys.exit(1)
-       for word in self.text:
-            if word in stopwords:
-                self.text.remove(word)
-       #below should be all the keywords in the file
-       #print(self.text)    
 
-    # Given the case specified that we read in from argv, we
-    # look through the text list that we have and iterate
-    # character by character to set words to lower case
-
-    def CaseHandler(self, caseSpecified):
-
-        # if conditionals to determine the cases selected
-
-        if (caseSpecified == 'Y'):
-            print("Uppercase chosen")
+    def RemoveStopWords(fileContent, stopWords):
+        result = (map(lambda x : x.casefold() in stopWords, fileContent))
+        listResult = list(result)
+        print(listResult)
+        listNoStopWords = Solution.RemoveStopWordsHelper(fileContent, listResult, 0)
+        return listNoStopWords
 
 
+    def RemoveStopWordsHelper(fileContent, stopWords, listIndex):
 
+        if (listIndex == len(fileContent)-1):
+            if (stopWords[listIndex] == True):
+                revisedList = fileContent[:listIndex] + stopWords[(listIndex+1):]
+                return revisedList
+            else:
+                return fileContent
 
-        elif (caseSpecified == 'N'):
-            print("Lowercase chosen")
+        if (stopWords[listIndex] == True):
+            revisedList = fileContent[:listIndex] + fileContent[(listIndex+1):]
+            stopWordsRevised = stopWords[:listIndex] + stopWords[(listIndex+1):]
+            return Solution.RemoveStopWordsHelper(revisedList, stopWordsRevised, listIndex)
         else:
-            print("Unknown argument passed in for 'uppercase' field. Please use either Y/N to denote uppercase or lowercase. Terminating program")
+            return Solution.RemoveStopWordsHelper(fileContent, stopWords, listIndex+1)
+
+
+
+
+    def caseHelper(listWords, caseSpecified):
+        if (caseSpecified == "Y" ):
+            print ("Uppercase Chosen")
+            uppercaseList = Solution.UppercaseHelper(listWords)
+            return uppercaseList
+
+        elif (caseSpecified == "N"):
+            print ("Lowercase Chosen")
+            lowercaseList = Solution.LowercaseHelper(listWords)
+            return lowercaseList
+        else:
+            print ("Incorrect input for case specified - please input either Y/N")
+            print ("Exitting program.")
             exit(1)
 
-    # Helper functions to main functions
-    # check if the character is a valid letter
-    # and adds 32/subtracts 32 to ASCII value
-    # then passes the character back
 
-    # if we don't have to convert - just pass back the
-    # character
+    def LowercaseHelper(listWords):
+        listIndex = 0
+        charIndex = 0
+        word = listWords[listIndex]
 
-    def LowercaseHelper(character):
-        if (character.isalpha() and not character.islower()):
-            print("This is not a lowercase character")
-            return chr(ord(character) + 32)
+        # Pass to another helper that iterates character by character
+        lowercaseList = Solution.LowercaseCharHelper(listWords, word, listIndex, charIndex)
+        return lowercaseList
+
+    # Functionality - recursively iterates character by character
+    # through each word in the list and converts the character to
+    # lowercase.
+    # We slice the arrays given the indexes we passed in and concatenate
+    # converted characters to the the sliced list to form a new list
+    # in order to prevent mutations
+    #
+    # @ params - listWords [] , word evaluating, listIndex, characterIndex
+    # @ special cases
+    # 1) if we're at the end of the word then we increment listIndex by 1
+    # 2) if we're at the end of the list then we return the list
+
+
+    def LowercaseCharHelper(listWords, string,  listIndex, charIndex):
+
+        string = listWords[listIndex]
+        character = string[charIndex]
+
+        # check if we reach the end of the list or word
+
+        if (charIndex == len(string) - 1 and listIndex == len(listWords) - 1):
+            return listWords
+
+        elif (charIndex == len(string) - 1):
+            if (character.isalpha() and not character.islower()):
+                tempString = string[0:charIndex] + character.lower()
+                tempList = listWords[0:listIndex] + [tempString] + listWords[listIndex+1:len(listWords)]
+                return Solution.LowercaseCharHelper(tempList, tempList[listIndex+1], listIndex+1, 0)
+
+            return Solution.LowercaseCharHelper(listWords, listWords[listIndex+1], listIndex+1, 0)
         else:
-            return character
+            if (character.isalpha() and not character.islower()):
+                tempString = string[0:charIndex] + character.lower() + string[charIndex + 1:len(string)]
+                tempList = listWords[0:listIndex] + [tempString] + listWords[listIndex+1:len(listWords)]
+                return Solution.LowercaseCharHelper(tempList, tempString, listIndex, charIndex + 1)
+            else:
+                return Solution.LowercaseCharHelper(listWords, listWords[listIndex], listIndex, charIndex+1)
 
 
-    def UppercaseHelper(character):
-        if (character.isalpha() and not character.isupper()):
-            print("this is not an uppercase character")
-            return chr(ord(character) - 32)
+
+    def UppercaseHelper(listWords):
+        listIndex = 0
+        charIndex = 0
+
+        # Pass to another helper that iterates character by character
+        uppercaseList = Solution.UppercaseCharHelper(listWords, listWords[listIndex], listIndex, charIndex)
+        return uppercaseList
+
+    def UppercaseCharHelper(listWords, string, listIndex, charIndex):
+
+        string = listWords[listIndex]
+        character = string[charIndex]
+
+
+        # check if we reach the end of the list or word
+        if (charIndex == len(string) - 1 and listIndex == len(listWords) - 1):
+            return listWords
+        elif (charIndex == len(string) - 1):
+            if (character.isalpha() and not character.isupper()):
+                tempString = string[0:charIndex] + character.upper()
+                tempList = listWords[0:listIndex] + [tempString] + listWords[listIndex+1:len(listWords)]
+                return Solution.UppercaseCharHelper(tempList, tempList[listIndex+1], listIndex+1, 0)
+
+            return Solution.UppercaseCharHelper(listWords, listWords[listIndex+1], listIndex+1, 0)
         else:
-            return character
+            if (character.isalpha() and not character.isupper()):
+                tempString = string[0:charIndex] + character.upper() + string[charIndex+1:len(string)]
+                tempList = listWords[0:listIndex] + [tempString] + listWords[listIndex+1:len(listWords)]
+                return Solution.UppercaseCharHelper(tempList, tempString, listIndex, charIndex+1)
+            else:
+                return Solution.UppercaseCharHelper(listWords, listWords[listIndex], listIndex, charIndex+1)
 
 
 
@@ -111,21 +198,9 @@ class Solution:
 if __name__ == "__main__":
 
     tempArgHolder = sys.argv[1]
-
     input, kNum, mostFreq, uppercase, output = Solution.argParser(tempArgHolder)
 
-    #print ("input : " + input)
-    #print ("kNumbers : " + str(kNum))
-    #print ("most Frequent : " + mostFreq)
-    #print ("uppercase : " + uppercase)
-    #print("output : " + output)
-
-    # Read input and store them in the list in the class
-    Solution.fileHandler(Solution, input, "stopwords.txt")
-
-    Solution.CaseHandler(Solution, uppercase)
-
-    sample = Solution.LowercaseHelper("A")
-    sample2 = Solution.UppercaseHelper("c")
-    print(sample)
-    print(sample2)
+    # check the param validity
+    Solution.CheckParams(kNum, mostFreq, uppercase)
+    # Read input and stores the words in a string
+    Solution.fileHandler(input, uppercase)
