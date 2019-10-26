@@ -60,9 +60,8 @@ class Solution:
                stopWords = (open("stopwords.txt", "r", encoding = "utf8")).read().split()
                stopWordsUpdated = list(filter(str.strip, stopWords))
                caseCorrectedList = Solution.caseHelper(fileContent, caseSpecified)
-               #print(caseCorrectedList)
                noStopWordsList = Solution.RemoveStopWords(caseCorrectedList, stopWordsUpdated)
-               #print(noStopWordsList)
+               print(noStopWordsList)
                wordCountedList = Solution.wordCounter(noStopWordsList, 0)
                for i in range(len(wordCountedList)):
                    print(wordCountedList[i][0]+' '+str(wordCountedList[i][1]))
@@ -151,10 +150,29 @@ class Solution:
         string = listWords[listIndex]
         character = string[charIndex]
 
+        # check if the character is not an alphabet character
+        if (not character.isalpha()):
+            tempString = string[:charIndex] + string[(charIndex+1):]
+            if (charIndex < len(tempString)):
+                revisedList = listWords[0:listIndex] + [tempString] + listWords[listIndex + 1:len(listWords)]
+                return Solution.LowercaseCharHelper(revisedList, tempString, listIndex, charIndex)
+            elif (charIndex == len(tempString)):
+                if (len(tempString) == 0):
+                    revisedList = listWords[0:listIndex] + listWords[listIndex + 1:len(listWords)]
+                    return Solution.LowercaseCharHelper(revisedList, revisedList[listIndex], listIndex, 0)
+                elif (len(tempString) > 0):
+                    revisedList = listWords[0:listIndex] + [tempString] + listWords[listIndex + 1:len(listWords)]
+                    return Solution.LowercaseCharHelper(revisedList, revisedList[listIndex], listIndex, 0)
+
         # check if we reach the end of the list or word
 
         if (charIndex == len(string) - 1 and listIndex == len(listWords) - 1):
-            return listWords
+            if (character.isalpha() and not character.islower()):
+                tempString = string[0:charIndex] + character.lower()
+                tempList = listWords[0:listIndex] + [tempString]
+                return tempList
+            else:
+                return listWords
 
         elif (charIndex == len(string) - 1):
             if (character.isalpha() and not character.islower()):
@@ -186,10 +204,33 @@ class Solution:
         string = listWords[listIndex]
         character = string[charIndex]
 
+        # Check if the character is a non-alphabet character
+
+        if (not character.isalpha()):
+            tempString = string[:charIndex] + string[(charIndex+1):]
+
+            if (charIndex < len(tempString)):
+                revisedList = listWords[0:listIndex] + [tempString] + listWords[listIndex+1:len(listWords)]
+                return Solution.UppercaseCharHelper(revisedList, tempString, listIndex, charIndex)
+            elif(charIndex == len(tempString)):
+                if (len(tempString) == 0):
+                    revisedList = listWords[0:listIndex] + listWords[listIndex+1:len(listWords)]
+                    return Solution.UppercaseCharHelper(revisedList, revisedList[listIndex], listIndex, 0)
+                elif (len(tempString) > 0):
+                    revisedList = listWords[0:listIndex] + [tempString] + listWords[listIndex+1:len(listWords)]
+                    return Solution.UppercaseCharHelper(revisedList, revisedList[listIndex], listIndex, 0)
+
+
+
 
         # check if we reach the end of the list or word
         if (charIndex == len(string) - 1 and listIndex == len(listWords) - 1):
-            return listWords
+            if (character.isalpha() and not character.isupper()):
+                tempString = string[0:charIndex] + character.upper()
+                tempList = listWords[0:listIndex] + [tempString]
+                return tempList
+            else:
+                return listWords
         elif (charIndex == len(string) - 1):
             if (character.isalpha() and not character.isupper()):
                 tempString = string[0:charIndex] + character.upper()
