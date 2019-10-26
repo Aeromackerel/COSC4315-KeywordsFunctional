@@ -51,7 +51,7 @@ class Solution:
             exit (1)
 
 
-    def fileHandler(fileName, caseSpecified):
+    def fileHandler(fileName, caseSpecified, mostfreq, k):
 
        try:
             with open(fileName,"r", encoding = "utf8") as f:
@@ -62,13 +62,15 @@ class Solution:
                caseCorrectedList = Solution.caseHelper(fileContent, caseSpecified)
                noStopWordsList = Solution.RemoveStopWords(caseCorrectedList, stopWordsUpdated)
                print(noStopWordsList)
-               wordCountedList = Solution.wordCounter(noStopWordsList, 0)
-               for i in range(len(wordCountedList)):
-                   print(wordCountedList[i][0]+' '+str(wordCountedList[i][1]))
+               wordCountedList = Solution.wordCounter(noStopWordsList, 0, mostFreq, k)
+               print(wordCountedList)
  
        except:
             print("File Not Found.")
-    def wordCounter(fileContent, index, wordCountedList = {}):
+
+    # Returns each word and its word frequency.
+    # 'k' parameter is currently unused since it does not account for ties
+    def wordCounter(fileContent, index, mostFreq, k, wordCountedList={}):
         word = fileContent[index]
         if(index == len(fileContent)-1):
             return fileContent
@@ -77,8 +79,13 @@ class Solution:
                 wordCountedList[word] += 1
             else:
                 wordCountedList[word] = 1
-            Solution.wordCounter(fileContent, index+1)
-        return sorted(wordCountedList.items(), key=lambda x: (-x[1],x[0]))
+            Solution.wordCounter(fileContent, index + 1, mostFreq, k)
+            if (mostFreq == 'Y'):
+                sortedList = sorted(wordCountedList.items(), key=lambda x: (-x[1], x[0]))
+            elif (mostFreq == 'N'):
+                sortedList = sorted(wordCountedList.items(), key=lambda x: (x[1], x[0]))
+            formattedList = "".join(a + ' ' + str(b) + '\n' for a, b in sortedList)
+            return formattedList
 
     def RemoveStopWords(fileContent, stopWords):
         result = (map(lambda x : x.casefold() in stopWords, fileContent))
@@ -103,8 +110,6 @@ class Solution:
             return Solution.RemoveStopWordsHelper(revisedList, stopWordsRevised, listIndex)
         else:
             return Solution.RemoveStopWordsHelper(fileContent, stopWords, listIndex+1)
-
-
 
 
     def caseHelper(listWords, caseSpecified):
@@ -259,4 +264,4 @@ if __name__ == "__main__":
     # check the param validity
     Solution.CheckParams(kNum, mostFreq, uppercase)
     # Read input and stores the words in a string
-    Solution.fileHandler(input, uppercase)
+    Solution.fileHandler(input, uppercase, mostFreq, kNum)
