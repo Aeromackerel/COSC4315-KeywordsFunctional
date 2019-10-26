@@ -67,7 +67,7 @@ class Solution:
             print("File Not Found.")
 
     def RemoveStopWords(fileContent, stopWords):
-        result = (map(lambda x : x in stopWords, fileContent))
+        result = (map(lambda x : x.casefold() in stopWords, fileContent))
         listResult = list(result)
         print(listResult)
         listNoStopWords = Solution.RemoveStopWordsHelper(fileContent, listResult, 0)
