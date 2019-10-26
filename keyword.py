@@ -60,16 +60,31 @@ class Solution:
                stopWords = (open("stopwords.txt", "r", encoding = "utf8")).read().split()
                stopWordsUpdated = list(filter(str.strip, stopWords))
                caseCorrectedList = Solution.caseHelper(fileContent, caseSpecified)
-               print(caseCorrectedList)
+               #print(caseCorrectedList)
                noStopWordsList = Solution.RemoveStopWords(caseCorrectedList, stopWordsUpdated)
-               print(noStopWordsList)
+               #print(noStopWordsList)
+               wordCountedList = Solution.wordCounter(noStopWordsList, 0)
+               for i in range(len(wordCountedList)):
+                   print(wordCountedList[i][0]+' '+str(wordCountedList[i][1]))
+ 
        except:
             print("File Not Found.")
+    def wordCounter(fileContent, index, wordCountedList = {}):
+        word = fileContent[index]
+        if(index == len(fileContent)-1):
+            return fileContent
+        else:
+            if word in wordCountedList.keys():
+                wordCountedList[word] += 1
+            else:
+                wordCountedList[word] = 1
+            Solution.wordCounter(fileContent, index+1)
+        return sorted(wordCountedList.items(), key=lambda x: (-x[1],x[0]))
 
     def RemoveStopWords(fileContent, stopWords):
         result = (map(lambda x : x.casefold() in stopWords, fileContent))
         listResult = list(result)
-        print(listResult)
+        #print(listResult)
         listNoStopWords = Solution.RemoveStopWordsHelper(fileContent, listResult, 0)
         return listNoStopWords
 
