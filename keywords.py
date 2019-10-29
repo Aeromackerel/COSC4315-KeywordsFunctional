@@ -25,6 +25,11 @@ class Solution:
         except:
             # Print parameters and what is expected of each parameter, otherwise exit
             print ("Invalid arguments")
+            print("Parameter one in the input should be : input= *FILENAME GOES HERE* example - input.txt")
+            print("Parameter two should be : k= *INTEGER NUMEBR GOES HERE* example - 3")
+            print("Parameter three should be : mostfrequent= *Y/N goes here CASE MATTERS* example - Y")
+            print("Parameter four should be : uppercase= *Y/N goes here CASE MATTERS* example - N")
+            print("Parameter five should be : output= *OUTPUT FILENAME GOES HERE* example - output.txt")
             sys.exit(1)
 
         return argOne, argTwo, argThree, argFour, argFive
@@ -51,48 +56,183 @@ class Solution:
             exit (1)
 
 
-    def fileHandler(fileName, caseSpecified, mostfreq, k):
+    def fileHandler(fileName, caseSpecified, mostfreq, k, output):
 
        try:
             with open(fileName,"r", encoding = "utf8") as f:
                tempString = f.read()
                fileContent = tempString.split()
+               Solution.handleEmptyFile(fileContent, output)
                stopWords = (open("stopwords.txt", "r", encoding = "utf8")).read().split()
                stopWordsUpdated = list(filter(str.strip, stopWords))
                caseCorrectedList = Solution.caseHelper(fileContent, caseSpecified)
-               noStopWordsList = Solution.RemoveStopWords(caseCorrectedList, stopWordsUpdated)
-               print(noStopWordsList)
-               wordCountedList = Solution.wordCounter(noStopWordsList, 0, mostFreq, k)
-               print(wordCountedList)
- 
+               noStopWordsList = Solution.RemoveStopWords(caseCorrectedList, [], stopWordsUpdated, 0)
+
+               if (len(noStopWordsList) == 0):
+                    outputFile = open(output, "w", encoding = "utf8")
+                    Solution.writeEmptyFile(outputFile)
+                    exit(0)
+               else:
+                   wordCountedList = Solution.countWords(noStopWordsList, [] ,0)
+                   print(wordCountedList)
+                   print(len(wordCountedList))
+                   subWordFreqList = Solution.correctList(wordCountedList, 0, [])
+                   CorrectedWordList = Solution.wordSorter(subWordFreqList, 0, mostFreq, k)
+                   print(CorrectedWordList)
+                   outputFile = open(output, "w", encoding = "utf8")
+                   Solution.writeFile(CorrectedWordList, outputFile, 0)
        except:
-            print("File Not Found.")
+            print("An error occured. However, we could've caught an exit(0) exception please check the output file.")
+
+    # If nothing is in the input file
+    # print nothing to the output file
+    # @params - split word list, outputfilename
+
+    def handleEmptyFile(fileContent, output):
+        outputFile = open(output, "w", encoding = "utf8")
+        Solution.writeEmptyFile(outputFile)
+        exit(0)
+
+    # writes "" to the filename
+    def writeEmptyFile(outFile):
+        outFile.write("")
+
+    #Functionality - Gets list and write to output File
+    # @params - given list, output file name, index
+    def writeFile(wordList, outFile, index):
+      if(index == len(wordList)):
+        return wordList
+      else: 
+        outFile.write(wordList[index][0] + ' ' + str(wordList[index][1]) + '\n')
+        return Solution.writeFile(wordList, outFile, index+1)
+
+
+    #Functionality - Checks if the word is in the list or not
+    # if it is then we return true, otherwise we return false
+    # @params - word to find, list of words to search, index
+
+    def WordFinder(wordToFind, listSearch, index):
+
+      if (len(listSearch) == 0):
+        return False
+
+      # check if we found the work that we're looking for or no
+      # if we have return true, otherwise recursively call the
+      # function
+
+      if (index < len(listSearch) - 1):
+        if (wordToFind == listSearch[index]):
+          return True
+        else:
+          return Solution.WordFinder(wordToFind, listSearch, index+1)
+      elif (index == len(listSearch) - 1):
+        if (wordToFind == listSearch[index]):
+          return True
+        else:
+          return False
+
+
+    # Functionality - Creates a list with sublists
+    # given the word-frequency list we have
+    # @ params - word-frequency list, index, list
+
+    def correctList(wordFreqList, indexWordFreq, prevList):
+
+      if (indexWordFreq == len(wordFreqList)):
+       return prevList
+
+      word = wordFreqList[indexWordFreq]
+      frequency = wordFreqList[indexWordFreq + 1]
+      newSubList = [[word, frequency]]
+      prevListNew = prevList[:indexWordFreq] + newSubList
+      return Solution.correctList(wordFreqList, indexWordFreq + 2, prevListNew)
+
+      
+    # Functionality - Counts words and passes back a list
+    # [string, count, string, count, ... etc]
+    # @ params : list of words(without stopwords), index
+
+    def countWords (wordList, FreqList, index):
+      tempBool = Solution.WordFinder(wordList[index], FreqList, 0)
+
+      # Catch statement to signify we're done
+      if (index == len(wordList)-1):
+        if tempBool == True:
+          wordIndex = FreqList.index(wordList[index])
+          FreqIndex = wordIndex + 1
+          FreqUpdate = FreqList[FreqIndex] + 1
+          FreqListnew = FreqList[0:FreqIndex] + [FreqUpdate] + FreqList[FreqIndex+1:]
+          return FreqListnew
+        else:
+          FreqListNew = FreqList + [wordList[index]] + [1]
+          return FreqListNew
+
+      # boolean to check if the word is in the list or not
+      if tempBool == True:
+        wordIndex = FreqList.index(wordList[index])
+        FreqIndex = wordIndex+1
+        FreqUpdate = FreqList[FreqIndex] + 1
+        FreqListNew = FreqList[0:FreqIndex] + [FreqUpdate] + FreqList[FreqIndex+1:]
+        return Solution.countWords(wordList, FreqListNew, index+1)
+        
+      else:
+        FreqListNew = FreqList + [wordList[index]] + [1]
+        return Solution.countWords(wordList, FreqListNew, index+1)
+     
 
     # Returns each word and its word frequency.
-    # 'k' parameter is currently unused since it does not account for ties
-    def wordCounter(fileContent, index, mostFreq, k, wordCountedList={}):
-        word = fileContent[index]
+    # @ params : list of sublists, index, mostFreq, # of frequency, empty list
+    def wordSorter(fileContent, index, mostFreq, k):
         if(index == len(fileContent)-1):
             return fileContent
         else:
-            if word in wordCountedList.keys():
-                wordCountedList[word] += 1
-            else:
-                wordCountedList[word] = 1
-            Solution.wordCounter(fileContent, index + 1, mostFreq, k)
             if (mostFreq == 'Y'):
-                sortedList = sorted(wordCountedList.items(), key=lambda x: (-x[1], x[0]))
+                freqSortedList = sorted(fileContent, key=lambda x: (-x[1], x[0]))
             elif (mostFreq == 'N'):
-                sortedList = sorted(wordCountedList.items(), key=lambda x: (x[1], x[0]))
-            formattedList = "".join(a + ' ' + str(b) + '\n' for a, b in sortedList)
-            return formattedList
+                freqSortedList = sorted(fileContent, key=lambda x: (x[1], x[0]))
+            
+            # print(freqSortedList)
+            kFreqSortedList = Solution.correctSortedList(freqSortedList, [] , k, 0)
+            # print(kFreqSortedList)
+            # print(len(freqSortedList))
+            # print(len(kFreqSortedList))
 
-    def RemoveStopWords(fileContent, stopWords):
-        result = (map(lambda x : x.casefold() in stopWords, fileContent))
-        listResult = list(result)
-        #print(listResult)
-        listNoStopWords = Solution.RemoveStopWordsHelper(fileContent, listResult, 0)
-        return listNoStopWords
+            return kFreqSortedList
+
+    
+    # Functionality - corrects the sorted list given k numbers
+    # passes back a sliced sorted list w.r.t k Numbers
+    # @ params - tbd
+    def correctSortedList(freqSortedList, prevList, kNums, index):
+
+      if (kNums == 0):
+        return prevList
+      
+      elif (index == len(freqSortedList) - 1):
+        freqSortedListNew = prevList[:index] + freqSortedList[index:index+1]
+        return freqSortedListNew
+
+
+      if (kNums > 0):
+        if (freqSortedList[index][1] == freqSortedList[index+1][1]):
+          freqSortedListNew = prevList[:index] + freqSortedList[index:index+1]
+          return Solution.correctSortedList(freqSortedList, freqSortedListNew, kNums, index+1)
+        elif (freqSortedList[index][1] != freqSortedList[index+1][1]):
+          freqSortedListNew = prevList[:index] + freqSortedList[index:index+1]
+          return Solution.correctSortedList(freqSortedList, freqSortedListNew ,kNums - 1, index+1)
+
+
+
+
+    def RemoveStopWords(fileContent, boolList ,stopWords, index):
+        if (index < len(fileContent)):
+          currentString = fileContent[index].casefold()
+          isStopWordBool = Solution.WordFinder(currentString, stopWords, 0)
+          boolListNew = boolList[:index] + [isStopWordBool]
+          return Solution.RemoveStopWords(fileContent, boolListNew, stopWords, index+1)
+        elif (index == len(fileContent)):
+          listNoStopWords = Solution.RemoveStopWordsHelper(fileContent, boolList, 0)
+          return listNoStopWords
 
 
     def RemoveStopWordsHelper(fileContent, stopWords, listIndex):
@@ -114,12 +254,12 @@ class Solution:
 
     def caseHelper(listWords, caseSpecified):
         if (caseSpecified == "Y" ):
-            print ("Uppercase Chosen")
+            # print ("Uppercase Chosen")
             uppercaseList = Solution.UppercaseHelper(listWords)
             return uppercaseList
 
         elif (caseSpecified == "N"):
-            print ("Lowercase Chosen")
+            # print ("Lowercase Chosen")
             lowercaseList = Solution.LowercaseHelper(listWords)
             return lowercaseList
         else:
@@ -171,7 +311,7 @@ class Solution:
 
         # check if we reach the end of the list or word
 
-        if (charIndex == len(string) - 1 and listIndex == len(listWords) - 1):
+        if (charIndex == len(string) - 1 and listIndex == len(listWords)-1):
             if (character.isalpha() and not character.islower()):
                 tempString = string[0:charIndex] + character.lower()
                 tempList = listWords[0:listIndex] + [tempString]
@@ -193,7 +333,6 @@ class Solution:
                 return Solution.LowercaseCharHelper(tempList, tempString, listIndex, charIndex + 1)
             else:
                 return Solution.LowercaseCharHelper(listWords, listWords[listIndex], listIndex, charIndex+1)
-
 
 
     def UppercaseHelper(listWords):
@@ -258,10 +397,17 @@ class Solution:
 
 if __name__ == "__main__":
 
-    tempArgHolder = sys.argv[1]
-    input, kNum, mostFreq, uppercase, output = Solution.argParser(tempArgHolder)
+    #tempArgHolder = sys.argv[1]
+    # input, kNum, mostFreq, uppercase, output = Solution.argParser(tempArgHolder)
+
+    #manually adding arguments
+    input = "t1.txt"
+    kNum = 1
+    mostFreq = 'N'
+    uppercase = 'N'
+    output = "output.txt"
 
     # check the param validity
     Solution.CheckParams(kNum, mostFreq, uppercase)
     # Read input and stores the words in a string
-    Solution.fileHandler(input, uppercase, mostFreq, kNum)
+    Solution.fileHandler(input, uppercase, mostFreq, kNum, output)
