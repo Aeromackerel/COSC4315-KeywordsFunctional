@@ -4,6 +4,11 @@ import sys
 
 class Solution:
 
+    def exampleInput(self):
+        print("input format is as follows : 'input=tc1.txt;k=3 (integer number here); mostfrequent = Y (Y or N uppercase ONLY); uppercase = N (Y or N uppercase ONLY); output = output.txt ")
+        exit(0)
+
+
     # Parses Arguments and passes back to main
     # @ params - input argument (argv[1])
     # @ error - if we get different number of arguments then -> notify user and exit program
@@ -49,9 +54,13 @@ class Solution:
             print ("kNumbers should be greater or equal to 0.")
             exit (1)
         elif (mostFreq != 'Y' and mostFreq != 'N'):
+            print("the input for mostfrequent should be as follows - (example) mostfrequent=N")
+            print("CASE matters -> mostfrequent (SHOULD BE LOWERCASE)")
             print ("Most frequent should be either Y OR N")
             exit (1)
         elif (caseSpecified != 'Y' and caseSpecified != 'N'):
+            print("the input for uppercase section should be as follows - (example) uppercase=Y")
+            print("CASE matters uppercase (SHOULD BE LOWERCASE)")
             print ("uppercase should be either Y OR N")
             exit (1)
 
@@ -62,7 +71,6 @@ class Solution:
             with open(fileName,"r", encoding = "utf8") as f:
                tempString = f.read()
                fileContent = tempString.split()
-               Solution.handleEmptyFile(fileContent, output)
                stopWords = (open("stopwords.txt", "r", encoding = "utf8")).read().split()
                stopWordsUpdated = list(filter(str.strip, stopWords))
                caseCorrectedList = Solution.caseHelper(fileContent, caseSpecified)
@@ -74,15 +82,14 @@ class Solution:
                     exit(0)
                else:
                    wordCountedList = Solution.countWords(noStopWordsList, [] ,0)
-                   print(wordCountedList)
-                   print(len(wordCountedList))
                    subWordFreqList = Solution.correctList(wordCountedList, 0, [])
                    CorrectedWordList = Solution.wordSorter(subWordFreqList, 0, mostFreq, k)
-                   print(CorrectedWordList)
                    outputFile = open(output, "w", encoding = "utf8")
                    Solution.writeFile(CorrectedWordList, outputFile, 0)
        except:
-            print("An error occured. However, we could've caught an exit(0) exception please check the output file.")
+            print("An error occured. Please check if the input file is in the directory")
+            print("input format is as follows : 'input=tc1.txt;k=3 (integer number here); mostfrequent = Y (Y or N uppercase ONLY); uppercase = N (Y or N uppercase ONLY); output = output.txt ")
+            print("please check if your output file has been written - might've caught an exit(0)")
 
     # If nothing is in the input file
     # print nothing to the output file
@@ -147,7 +154,7 @@ class Solution:
       prevListNew = prevList[:indexWordFreq] + newSubList
       return Solution.correctList(wordFreqList, indexWordFreq + 2, prevListNew)
 
-      
+
     # Functionality - Counts words and passes back a list
     # [string, count, string, count, ... etc]
     # @ params : list of words(without stopwords), index
@@ -397,15 +404,21 @@ class Solution:
 
 if __name__ == "__main__":
 
-    #tempArgHolder = sys.argv[1]
-    # input, kNum, mostFreq, uppercase, output = Solution.argParser(tempArgHolder)
+    # check if system arguments are passed in
+    if (len(sys.argv) == 1):
+        print("You only gave one argument")
+        Solution.exampleInput(Solution)
+
+
+    tempArgHolder = sys.argv[1]
+    input, kNum, mostFreq, uppercase, output = Solution.argParser(tempArgHolder)
 
     #manually adding arguments
-    input = "t1.txt"
-    kNum = 1
-    mostFreq = 'N'
-    uppercase = 'N'
-    output = "output.txt"
+    # input = "t1.txt"
+    # kNum = 1
+    # mostFreq = 'N'
+    # uppercase = 'N'
+    # output = "output.txt"
 
     # check the param validity
     Solution.CheckParams(kNum, mostFreq, uppercase)
