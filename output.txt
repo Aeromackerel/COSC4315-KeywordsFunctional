@@ -1,9 +1,0 @@
-nobel 3
-americans 2
-awarded 2
-careers 2
-foundation 2
-immigrants 2
-prizes 2
-topics 2
-universities 2

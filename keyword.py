@@ -8,7 +8,6 @@ class Solution:
         print("input format is as follows : 'input=tc1.txt;k=3 (integer number here); mostfrequent = Y (Y or N uppercase ONLY); uppercase = N (Y or N uppercase ONLY); output = output.txt ")
         exit(0)
 
-
     # Parses Arguments and passes back to main
     # @ params - input argument (argv[1])
     # @ error - if we get different number of arguments then -> notify user and exit program

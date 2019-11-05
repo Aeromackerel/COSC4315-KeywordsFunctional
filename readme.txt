@@ -4,6 +4,7 @@ Member 1 : Frank Nguyen
 	   1436640
 
 Member 2 : Richer Pham
+	   1514130
 	   
 
 How to run code
