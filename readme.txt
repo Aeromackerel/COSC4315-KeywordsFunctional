@@ -13,7 +13,7 @@ Our program does not require a stopwords.txt input, so the file MUST have the na
 	- Hexcode might be different (there might be warnings in all the file)
 	-> due to hexcode differences perhaps (from google groups - "Curious case of different bytes" thread)
 
-Example input = python3 keyword.py "input=testcase1.txt;k=3;mostfrequent=Y;uppercase=N;output=outputTc1.txt"
+Example input = python3 keywords.py "input=testcase1.txt;k=3;mostfrequent=Y;uppercase=N;output=outputTc1.txt"
 
 - Y and N must be uppercase
 - k should be an integer; no floats or doubles.
