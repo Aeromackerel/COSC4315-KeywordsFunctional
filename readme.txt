@@ -1,12 +1,3 @@
-Group Number: 19
-
-Member 1 : Frank Nguyen
-	   1436640
-
-Member 2 : Richer Pham
-	   1514130
-	   
-
 How to run code
 *NOTE* : please input the stopwords file in as stopwords.txt within the same directory the .py file is located.
 Our program does not require a stopwords.txt input, so the file MUST have the name 'stopwords.txt'.
